@@ -1,0 +1,57 @@
+name: APK bauen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Version lesen
+        id: v
+        run: echo "version=$(grep '^versionName' tool/lighttool.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Tests
+        run: |
+          chmod +x gradlew
+          ./gradlew :tool:testDebugUnitTest -DlightSdk.toolOnly=true --stacktrace
+
+      - name: APK bauen
+        run: |
+          ./gradlew :tool:assembleDebug -DlightSdk.toolOnly=true --stacktrace
+          cp tool/build/outputs/apk/debug/*.apk FOX-Songbook-Light.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FOX-Songbook-Light-APK
+          path: FOX-Songbook-Light.apk
+
+      - name: Als Release veröffentlichen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: FOX Songbook Light ${{ steps.v.outputs.version }}
+          prerelease: false
+          make_latest: true
+          files: FOX-Songbook-Light.apk
+          body: |
+            Automatisch gebaut aus ${{ github.sha }}.
+            Installation: siehe README → „Aufs Light Phone bringen“.
