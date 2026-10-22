@@ -186,7 +186,8 @@ class UploadServer(
 </head>
 <body>
 <h1>Songs auf das Light Phone</h1>
-<p>Wähle dein Songbook-Pro-Backup (.sbpbackup) oder ChordPro-Dateien aus. Das Light Phone importiert sie sofort.</p>
+<p>Wähle dein Songbook-Pro-Backup (.sbpbackup), ChordPro-Dateien oder Übe-Aufnahmen (MP3, M4A …) aus. Das Light Phone importiert sie sofort.</p>
+<p>Aufnahmen werden über den Dateinamen dem Song zugeordnet, z. B. <i>Africa.mp3</i> oder <i>Toto - Africa.mp3</i>. Auf dem Telefon kannst du sie auch von Hand zuordnen.</p>
 <label>Datei auswählen<input id="file" type="file" multiple></label>
 <div id="log"></div>
 <script>

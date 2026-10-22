@@ -12,6 +12,10 @@ object SongbookRepository {
     private val _library = MutableStateFlow(Library.EMPTY)
     val library: StateFlow<Library> = _library.asStateFlow()
 
+    private val _audioFiles = MutableStateFlow<List<String>>(emptyList())
+    /** Names of the stored practice recordings. */
+    val audioFiles: StateFlow<List<String>> = _audioFiles.asStateFlow()
+
     private val _loaded = MutableStateFlow(false)
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
 
@@ -21,6 +25,7 @@ object SongbookRepository {
         val s = LibraryStore(filesDir)
         store = s
         _library.value = s.load()
+        _audioFiles.value = s.audioFiles()
         _loaded.value = true
     }
 
@@ -29,8 +34,25 @@ object SongbookRepository {
     fun import(filesDir: File, bytes: ByteArray, fileName: String): String {
         val s = store ?: LibraryStore(filesDir).also { store = it }
         val summary = s.import(bytes, fileName)
+        if (summary.audioFile != null) {
+            _audioFiles.value = s.audioFiles()
+            val file = summary.audioFile
+            val song = _library.value.songs
+                .filter { Audio.match(it, listOf(file)) != null }
+                .maxByOrNull { it.title.length }
+            return summary.message + (song?.let { " → ${it.title}" } ?: "")
+        }
         _library.value = s.load()
         _loaded.value = true
         return summary.message
+    }
+
+    fun audioFile(name: String): File? = store?.audioFile(name)
+
+    @Synchronized
+    fun deleteAudio(name: String) {
+        val s = store ?: return
+        s.deleteAudio(name)
+        _audioFiles.value = s.audioFiles()
     }
 }

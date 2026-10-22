@@ -55,6 +55,15 @@ class Prefs(private val store: DataStore<Preferences>) {
         }
     }
 
+    /** Recording chosen by hand for a song: null = pick automatically by name, "" = none. */
+    suspend fun audioAssignment(songId: String): String? =
+        store.data.first()[stringPreferencesKey("audio:$songId")]
+
+    suspend fun setAudioAssignment(songId: String, fileName: String?) {
+        val key = stringPreferencesKey("audio:$songId")
+        store.edit { if (fileName == null) it.remove(key) else it[key] = fileName }
+    }
+
     companion object {
         const val MAX_FONT_STEP = 5
         const val DEFAULT_FONT_STEP = 2

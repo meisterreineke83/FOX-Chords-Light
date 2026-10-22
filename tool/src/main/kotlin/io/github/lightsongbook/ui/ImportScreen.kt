@@ -148,6 +148,7 @@ class ImportScreen(sealedActivity: SealedLightActivity) :
                             modifier = Modifier.padding(vertical = 1f.gridUnitsAsDp()),
                         )
                         Paragraph("3. Datei auswählen. Fertig.")
+                        Paragraph("Übe-Aufnahmen (MP3 …) gehen genauso. Heißt die Datei wie der Song, z. B. „Africa.mp3“, wird sie automatisch zugeordnet.")
                         LightText(
                             text = "Ein neues Backup ersetzt Songs und Setlists. Die Seite funktioniert nur, solange dieser Bildschirm offen ist.",
                             variant = LightTextVariant.Detail,

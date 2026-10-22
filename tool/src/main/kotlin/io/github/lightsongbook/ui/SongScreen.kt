@@ -27,10 +27,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thelightphone.sdk.LightScreen
 import com.thelightphone.sdk.SealedLightActivity
+import com.thelightphone.sdk.audio.DefaultLightAudio
+import com.thelightphone.sdk.audio.LightAudioPlayer
 import com.thelightphone.sdk.ui.LightBarButton
 import com.thelightphone.sdk.ui.LightBottomBarItem
 import com.thelightphone.sdk.ui.LightIcons
@@ -39,9 +42,11 @@ import com.thelightphone.sdk.ui.LightText
 import com.thelightphone.sdk.ui.LightTextVariant
 import com.thelightphone.sdk.ui.LightThemeTokens
 import com.thelightphone.sdk.ui.gridUnitsAsDp
+import io.github.lightsongbook.core.Audio
 import io.github.lightsongbook.core.SongLine
 import io.github.lightsongbook.core.SongRendering
 import kotlinx.coroutines.isActive
+import kotlin.math.roundToInt
 
 /** Lyric font sizes for the A−/A+ buttons, in sp. */
 private val FONT_SIZES = listOf(13f, 15f, 17f, 20f, 23f, 27f)
@@ -50,14 +55,15 @@ private val FONT_SIZES = listOf(13f, 15f, 17f, 20f, 23f, 27f)
 private val SCROLL_SPEEDS_DP = listOf(3f, 4f, 5f, 6f, 8f, 10f, 12f, 15f, 18f, 22f, 27f, 33f, 40f, 50f, 62f)
 
 class SongScreen(
-    sealedActivity: SealedLightActivity,
+    private val sealed: SealedLightActivity,
     private val request: SongRequest,
-) : LightScreen<Unit, SongViewModel>(sealedActivity) {
+) : LightScreen<Unit, SongViewModel>(sealed) {
 
     override val viewModelClass: Class<SongViewModel>
         get() = SongViewModel::class.java
 
-    override fun createViewModel() = SongViewModel(request, Prefs(lightContext.dataStore))
+    override fun createViewModel() =
+        SongViewModel(request, Prefs(lightContext.dataStore), DefaultLightAudio(sealed))
 
     @Composable
     override fun Content() {
@@ -65,6 +71,10 @@ class SongScreen(
         val fontStep by viewModel.fontStep.collectAsState()
         val playing by viewModel.playing.collectAsState()
         val speed by viewModel.scrollSpeed.collectAsState()
+        val player by viewModel.player.collectAsState()
+        val audioName by viewModel.audioName.collectAsState()
+        val audioSpeed by viewModel.audioSpeed.collectAsState()
+        val hasAudioFiles by viewModel.hasAudioFiles.collectAsState()
         val current = ui
 
         ToolScaffold(
@@ -84,6 +94,11 @@ class SongScreen(
                 playing = playing,
                 speed = speed,
             )
+
+            val activePlayer = player
+            if (audioName != null && activePlayer != null) {
+                AudioRow(activePlayer, audioSpeed)
+            }
 
             val scrollState = remember(current.song.id) { ScrollState(0) }
             AutoScroll(scrollState, playing, speed, current.song.id)
@@ -108,6 +123,20 @@ class SongScreen(
                     LightText(text = current.song.notes, variant = LightTextVariant.Paragraph)
                 }
 
+                if (hasAudioFiles) {
+                    LightText(
+                        text = if (audioName != null) "AUFNAHME: $audioName" else "AUFNAHME ZUORDNEN",
+                        variant = LightTextVariant.Detail,
+                        lighten = audioName != null,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .lightClickable { openAudioPicker(current.song.title, audioName) }
+                            .padding(top = 1.5f.gridUnitsAsDp(), bottom = 0.5f.gridUnitsAsDp()),
+                    )
+                }
+
                 if (current.nextTitle != null) {
                     LightText(
                         text = "WEITER: ${current.nextTitle}  →",
@@ -121,6 +150,44 @@ class SongScreen(
                 // room to scroll the last lines up to eye level
                 Spacer(modifier = Modifier.height(6f.gridUnitsAsDp()))
             }
+        }
+    }
+
+    private fun openAudioPicker(title: String, current: String?) {
+        navigateTo(
+            screenFactory = { AudioPickerScreen(it, title, current) },
+            resultCallback = { choice -> viewModel.assignAudio(choice.fileName) },
+        )
+    }
+
+    @Composable
+    private fun AudioRow(player: LightAudioPlayer, audioSpeed: Float) {
+        val position by player.positionMs.collectAsState()
+        val duration by player.durationMs.collectAsState()
+        val isPlaying by player.isPlaying.collectAsState()
+        val error by player.error.collectAsState()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 0.5f.gridUnitsAsDp(), end = 0.5f.gridUnitsAsDp(), bottom = 0.25f.gridUnitsAsDp()),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ControlText(if (isPlaying) "PAUSE" else "AUDIO") { viewModel.toggleAudio() }
+            ControlText("‹10") { viewModel.skipAudio(-10_000) }
+            LightText(
+                text = if (error != null) "Fehler" else "${Audio.formatTime(position)}/${Audio.formatTime(duration)}",
+                variant = LightTextVariant.Detail,
+                lighten = true,
+                maxLines = 1,
+                modifier = Modifier.weight(1f),
+            )
+            ControlText("−") { viewModel.changeAudioSpeed(-1) }
+            LightText(
+                text = "${(audioSpeed * 100).roundToInt()}%",
+                variant = LightTextVariant.Detail,
+                maxLines = 1,
+            )
+            ControlText("+") { viewModel.changeAudioSpeed(1) }
         }
     }
 
@@ -174,7 +241,7 @@ class SongScreen(
                 text = if (playing) "▶ $speed" else "SCROLL $speed",
                 variant = LightTextVariant.Detail,
                 modifier = Modifier
-                    .lightClickable { viewModel.togglePlaying() }
+                    .lightClickable { viewModel.toggleScrolling() }
                     .padding(vertical = 0.5f.gridUnitsAsDp()),
             )
             ControlText("+") { viewModel.changeSpeed(1) }

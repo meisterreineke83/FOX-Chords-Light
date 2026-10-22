@@ -3,6 +3,9 @@ package io.github.lightsongbook.ui
 import androidx.lifecycle.viewModelScope
 import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SimpleLightScreen
+import com.thelightphone.sdk.audio.LightAudio
+import com.thelightphone.sdk.audio.LightAudioPlayer
+import io.github.lightsongbook.core.Audio
 import io.github.lightsongbook.core.ChordPro
 import io.github.lightsongbook.core.CrashLog
 import io.github.lightsongbook.core.Library
@@ -17,6 +20,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -45,6 +49,7 @@ data class SongRequest(
 class SongViewModel(
     private val request: SongRequest,
     private val prefs: Prefs,
+    private val audio: LightAudio,
 ) : LightViewModel<Unit>() {
 
     data class Ui(
@@ -69,6 +74,20 @@ class SongViewModel(
 
     val playing = MutableStateFlow(false)
 
+    /** Player for the practice recording; created when the first song with a recording is shown. */
+    val player = MutableStateFlow<LightAudioPlayer?>(null)
+
+    /** File name of the current song's recording, or null. */
+    val audioName = MutableStateFlow<String?>(null)
+
+    /** Playback speed of the recording (pitch stays the same). */
+    val audioSpeed = MutableStateFlow(1.0f)
+
+    /** True if any recordings exist, so the screen can offer to assign one. */
+    val hasAudioFiles: StateFlow<Boolean> = SongbookRepository.audioFiles
+        .map { it.isNotEmpty() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, SongbookRepository.audioFiles.value.isNotEmpty())
+
     val fontStep: StateFlow<Int> =
         prefs.fontStep.stateIn(viewModelScope, SharingStarted.Eagerly, Prefs.DEFAULT_FONT_STEP)
 
@@ -81,6 +100,7 @@ class SongViewModel(
 
     init {
         loadShift()
+        loadAudio()
     }
 
     private fun item(i: Int = index.value): SongRequest.Item? = request.items.getOrNull(i)
@@ -183,12 +203,81 @@ class SongViewModel(
         viewModelScope.launch { prefs.setScrollSpeed(scrollSpeed.value + delta) }
     }
 
+    /** Bottom ▶: scrolling and the recording (if any) start and stop together. */
     fun togglePlaying() {
+        val start = !playing.value
+        playing.value = start
+        val p = player.value
+        if (p != null && audioName.value != null) {
+            if (start) p.play() else p.pause()
+        }
+    }
+
+    /** Only the scrolling (tap on "SCROLL"). */
+    fun toggleScrolling() {
         playing.value = !playing.value
     }
 
     fun stopPlaying() {
         playing.value = false
+    }
+
+    fun toggleAudio() {
+        val p = player.value ?: return
+        if (p.isPlaying.value) p.pause() else p.play()
+    }
+
+    fun skipAudio(deltaMs: Long) {
+        val p = player.value ?: return
+        p.seekTo((p.positionMs.value + deltaMs).coerceAtLeast(0L))
+    }
+
+    fun changeAudioSpeed(delta: Int) {
+        val i = AUDIO_SPEEDS.indexOfFirst { it >= audioSpeed.value - 0.001f }.coerceAtLeast(0)
+        val next = AUDIO_SPEEDS[(i + delta).coerceIn(0, AUDIO_SPEEDS.lastIndex)]
+        audioSpeed.value = next
+        player.value?.speed = next
+    }
+
+    /** Songs the recording picker needs: the current song's id and title. */
+    fun currentSong(): Song? = item()?.let { SongbookRepository.library.value.song(it.songId) }
+
+    /** @param fileName null = automatic, "" = none, otherwise the file to use */
+    fun assignAudio(fileName: String?) {
+        val song = currentSong() ?: return
+        viewModelScope.launch {
+            prefs.setAudioAssignment(song.id, fileName)
+            loadAudio()
+        }
+    }
+
+    private fun loadAudio() {
+        val song = currentSong() ?: return
+        viewModelScope.launch {
+            val assigned = prefs.audioAssignment(song.id)
+            val name = when {
+                assigned == null -> Audio.match(song, SongbookRepository.audioFiles.value)
+                assigned.isEmpty() -> null
+                else -> assigned
+            }
+            val file = name?.let { SongbookRepository.audioFile(it) }
+            if (currentSong()?.id != song.id) return@launch // user moved on meanwhile
+            audioName.value = file?.name
+            val existing = player.value
+            if (file == null) {
+                existing?.stop()
+                return@launch
+            }
+            val p = existing ?: audio.newPlayer().also { player.value = it }
+            p.setSource(file)
+            p.speed = audioSpeed.value
+        }
+    }
+
+    override fun onCleared() {
+        player.value?.release()
+        player.value = null
+        super.onCleared()
     }
 
     fun next() = goTo(index.value + 1)
@@ -198,13 +287,20 @@ class SongViewModel(
     private fun goTo(i: Int) {
         if (i !in request.items.indices) return
         playing.value = false
+        player.value?.stop()
+        audioName.value = null
         shift.value = null
         index.value = i
         loadShift()
+        loadAudio()
     }
 
     override fun onScreenHide(screen: SimpleLightScreen<Unit>) {
         super.onScreenHide(screen)
         playing.value = false
+        player.value?.pause()
     }
 }
+
+/** Playback speeds for the practice recording. */
+val AUDIO_SPEEDS = listOf(0.5f, 0.6f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.0f, 1.1f, 1.25f)

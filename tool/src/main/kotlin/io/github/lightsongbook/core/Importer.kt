@@ -22,7 +22,7 @@ class ImportException(message: String) : Exception(message)
  */
 object Importer {
 
-    const val MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+    const val MAX_UPLOAD_BYTES = 80 * 1024 * 1024
     private const val MAX_UNZIPPED_BYTES = 100L * 1024 * 1024
     private val CHORDPRO_EXTENSIONS = setOf("cho", "crd", "chopro", "chordpro", "chord", "pro", "txt")
 
@@ -32,10 +32,14 @@ object Importer {
 
         /** Single songs to add (file name to file text). */
         data class ChordProFiles(val files: List<Pair<String, String>>) : Payload()
+
+        /** A practice recording. */
+        class AudioFile(val fileName: String, val bytes: ByteArray) : Payload()
     }
 
     fun detect(bytes: ByteArray, fileName: String): Payload {
         if (bytes.isEmpty()) throw ImportException("Die Datei ist leer.")
+        if (Audio.isAudioFile(fileName)) return Payload.AudioFile(fileName, bytes)
         if (isZip(bytes)) {
             val entries = unzip(bytes)
             entries["dataFile.txt"]?.let { data ->

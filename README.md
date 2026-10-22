@@ -16,6 +16,11 @@ Deine Songs aus Songbook Pro auf dem Light Phone III – Akkorde, Texte und Setl
   mit H wird erkannt und beibehalten.
 - **Schriftgröße** mit `A−` / `A+`. **Auto-Scroll** mit ▶ unten oder Tippen auf „SCROLL“; das Tempo
   (Stufe 1–15) stellst du mit `−` / `+` daneben ein, es bleibt gespeichert.
+- **Übe-Aufnahmen:** MP3s (auch M4A, WAV, OGG, FLAC) genauso über den WLAN-Import hochladen. Heißt die
+  Datei wie der Song (`Africa.mp3`, `Toto - Africa.mp3`), wird sie automatisch zugeordnet; sonst unter
+  dem Song „AUFNAHME ZUORDNEN“. Im Song: `AUDIO` spielt/pausiert, `‹10` springt 10 Sekunden zurück,
+  `−` / `+` ändert das Tempo von 50 % bis 125 % ohne die Tonhöhe zu verändern. ▶ unten startet
+  Aufnahme und Auto-Scroll zusammen. Unter „AUFNAHMEN“ im Hauptmenü lassen sich Dateien löschen.
 - Hell/Dunkel umschaltbar.
 
 ## Was aus dem Backup übernommen wird
@@ -36,7 +41,7 @@ abgeleitet. Ändert Songbook Pro es, muss der Import angepasst werden.
 
 | Was | Wohin | Wozu |
 |---|---|---|
-| Backup / ChordPro-Dateien | nur vom iPad direkt ins lokale WLAN zum Telefon | Import |
+| Backup / ChordPro-Dateien / Aufnahmen | nur vom iPad direkt ins lokale WLAN zum Telefon | Import |
 
 - Das Tool baut **keine** Verbindung ins Internet auf. Die Berechtigung `INTERNET` braucht Android,
   damit das Telefon im WLAN eine Upload-Seite anbieten kann.

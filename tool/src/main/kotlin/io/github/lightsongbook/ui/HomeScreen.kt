@@ -64,6 +64,7 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
         val colors by LightThemeController.colors.collectAsState()
         val isDark = colors == LightThemeColors.Dark
         val lastCrash by viewModel.lastCrash.collectAsState()
+        val audioFiles by SongbookRepository.audioFiles.collectAsState()
 
         ToolScaffold(title = "Chords", onBack = null) {
             MenuItem("SONGS", value = library.songs.size.toString()) {
@@ -71,6 +72,9 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
             }
             MenuItem("SETLISTS", value = library.sets.size.toString()) {
                 navigateTo(::SetListsScreen)
+            }
+            MenuItem("AUFNAHMEN", value = audioFiles.size.toString()) {
+                navigateTo(::AudioListScreen)
             }
             MenuItem("IMPORT") {
                 navigateTo(::ImportScreen)

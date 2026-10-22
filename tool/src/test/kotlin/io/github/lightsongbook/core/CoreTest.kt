@@ -197,3 +197,22 @@ class ImporterTest {
         assertEquals(listOf("1", "2"), lib.search("uber wolken").map { it.id })
     }
 }
+
+class AudioTest {
+    private fun song(title: String, artist: String = "") = Song("x", title, artist, 0, 0, 0, "")
+
+    @Test
+    fun matchesByTitle() {
+        val files = listOf("Toto - Africa (live).mp3", "Africa.m4a", "Notes.txt", "Hello.mp3")
+        assertEquals("Africa.m4a", Audio.match(song("Africa"), files))
+        assertEquals("Toto - Africa (live).mp3", Audio.match(song("Africa", "Toto"), files.take(1)))
+        assertEquals(null, Audio.match(song("Ghost"), files))
+        assertEquals("Dont Stop Believin.mp3", Audio.match(song("Don't Stop Believin'"), listOf("Dont Stop Believin.mp3")))
+    }
+
+    @Test
+    fun detectsAudioUploads() {
+        assertIs<Importer.Payload.AudioFile>(Importer.detect(byteArrayOf(1, 2, 3), "Africa.MP3"))
+        assertEquals("3:07", Audio.formatTime(187_000))
+    }
+}
