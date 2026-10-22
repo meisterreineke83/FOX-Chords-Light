@@ -62,7 +62,7 @@ class SongListScreen(sealedActivity: SealedLightActivity) :
                 icon = LightIcons.SEARCH,
                 onClick = {
                     navigateTo(
-                        screenFactory = { SearchEditorScreen(it, query) },
+                        screenFactory = { TextEditorScreen(it, query) },
                         resultCallback = { viewModel.query.value = it.trim() },
                     )
                 },
@@ -103,10 +103,13 @@ class SongListScreen(sealedActivity: SealedLightActivity) :
     }
 }
 
-/** Full-screen keyboard for entering a search term. */
-class SearchEditorScreen(
+/** Full-screen keyboard for entering a search term or a name. */
+class TextEditorScreen(
     sealedActivity: SealedLightActivity,
     private val initial: String,
+    private val title: String = "Suche",
+    private val submitLabel: String = "SUCHEN",
+    private val isSearch: Boolean = true,
 ) : SimpleLightScreen<String>(sealedActivity) {
 
     @Composable
@@ -116,13 +119,13 @@ class SearchEditorScreen(
         val keyboardOptionsFlow = rememberKeyboardOptions()
         LightTheme(colors = themeColors) {
             LightTextInputEditor(
-                title = "Suche",
+                title = title,
                 state = textState,
                 keyboardOptionsFlow = keyboardOptionsFlow,
                 onSubmit = { result -> goBack(result.toString()) },
                 onBack = { goBack(null) },
-                submitLabel = "SUCHEN",
-                submitIcon = LightIcons.SEARCH,
+                submitLabel = submitLabel,
+                submitIcon = if (isSearch) LightIcons.SEARCH else LightIcons.ACCEPT,
                 singleLine = true,
                 modifier = Modifier.background(LightThemeTokens.colors.background),
             )

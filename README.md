@@ -7,8 +7,12 @@ Deine Songs aus Songbook Pro auf dem Light Phone III – Akkorde, Texte und Setl
   auf dem iPad aufrufen und das Songbook-Pro-Backup (`.sbpbackup`) auswählen. Kein Kabel, kein Konto,
   keine Cloud. ChordPro-Dateien (`.cho`, `.pro`, …, auch als Zip) gehen ebenfalls.
 - **Songs:** alphabetische Liste mit Suche (Titel, Interpret und Liedtext, Umlaute egal).
-- **Setlists:** in der Reihenfolge aus Songbook Pro, mit den dort eingestellten Transpositionen.
-  Mit ↑/↓ unten blätterst du zum vorigen/nächsten Song.
+- **Setlists:** die aus Songbook Pro (in deren Reihenfolge und Transpositionen) und **eigene**:
+  In „Setlists“ mit `+` anlegen, mit dem Stift bearbeiten (`+ SONG`, Reihenfolge mit ↑/↓, ✕ entfernt,
+  Name ändern, Setlist löschen). Im Song unten geht „ZU SETLIST HINZUFÜGEN“. Eigene Setlists bleiben
+  bei einem neuen Backup erhalten. Im Song blätterst du mit ↑/↓ unten zum vorigen/nächsten Song.
+- **Songs entfernen:** im Song unten „SONG ENTFERNEN“ (zweimal tippen). Entfernte Songs bleiben auch nach
+  einem neuen Backup weg und lassen sich im Hauptmenü unter „ENTFERNT“ wiederherstellen.
 - **Songanzeige:** Akkorde über dem Text, saubere Umbrüche zwischen Wörtern, Tabs und Grids in
   Festbreitenschrift (seitlich scrollbar).
 - **Transponieren:** `−` / `+` neben der Tonart, Tippen auf die Tonart setzt zurück. Die Wahl bleibt

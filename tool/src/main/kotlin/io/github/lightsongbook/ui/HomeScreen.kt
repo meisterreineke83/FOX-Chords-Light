@@ -76,6 +76,11 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
             MenuItem("AUFNAHMEN", value = audioFiles.size.toString()) {
                 navigateTo(::AudioListScreen)
             }
+            if (library.hiddenSongs.isNotEmpty()) {
+                MenuItem("ENTFERNT", value = library.hiddenSongs.size.toString()) {
+                    navigateTo(::HiddenSongsScreen)
+                }
+            }
             MenuItem("IMPORT") {
                 navigateTo(::ImportScreen)
             }

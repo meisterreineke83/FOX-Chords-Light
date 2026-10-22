@@ -216,3 +216,39 @@ class AudioTest {
         assertEquals("3:07", Audio.formatTime(187_000))
     }
 }
+
+class UserDataTest {
+    private fun tempDir() = kotlin.io.path.createTempDirectory("songbook").toFile()
+
+    @Test
+    fun savesAndLoadsOwnSets() {
+        val data = UserData(tempDir())
+        val set = UserData.newSet("Probe").copy(songIds = listOf("sbp:1", "cho:a.cho"))
+        data.saveSets(listOf(set))
+        assertEquals(listOf(set), data.loadSets())
+    }
+
+    @Test
+    fun movesItems() {
+        with(UserData) {
+            assertEquals(listOf("b", "a", "c"), listOf("a", "b", "c").moved(0, 1))
+            assertEquals(listOf("a", "b", "c"), listOf("a", "b", "c").moved(0, -1))
+        }
+    }
+
+    @Test
+    fun hiddenSongsAndOwnSetsInLibrary() {
+        val dir = tempDir()
+        val store = LibraryStore(dir)
+        store.import("{title: Eins}\n[G]a".toByteArray(), "eins.cho")
+        store.import("{title: Zwei}\n[G]b".toByteArray(), "zwei.cho")
+        store.userData.saveSets(listOf(UserSet("my:1", "Gig", "2026-10-22", listOf("cho:zwei.cho", "cho:eins.cho"))))
+        store.userData.saveHidden(setOf("cho:eins.cho"))
+        val lib = store.load()
+        assertEquals(listOf("Zwei"), lib.songs.map { it.title })
+        assertEquals(listOf("Eins"), lib.hiddenSongs.map { it.title })
+        val set = lib.sets.single()
+        assertTrue(set.editable)
+        assertEquals(listOf("cho:zwei.cho"), set.entries.map { it.songId })
+    }
+}

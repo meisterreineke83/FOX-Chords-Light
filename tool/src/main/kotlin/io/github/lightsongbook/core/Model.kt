@@ -43,15 +43,21 @@ data class SetList(
     val name: String,
     val date: String,
     val entries: List<SetEntry>,
+    /** true for setlists made on the phone; backup setlists are read-only */
+    val editable: Boolean = false,
 )
 
 data class Library(
     val songs: List<Song>,
     val sets: List<SetList>,
+    /** songs the user removed on the phone (kept so they can be restored) */
+    val hiddenSongs: List<Song> = emptyList(),
 ) {
     private val byId: Map<String, Song> by lazy { songs.associateBy { it.id } }
 
     fun song(id: String): Song? = byId[id]
+
+    internal val songIds: Set<String> by lazy { byId.keys }
 
     fun set(id: String): SetList? = sets.firstOrNull { it.id == id }
 

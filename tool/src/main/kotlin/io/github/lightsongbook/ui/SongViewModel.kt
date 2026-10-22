@@ -239,6 +239,38 @@ class SongViewModel(
         player.value?.speed = next
     }
 
+    /** Short confirmation shown at the end of the song, e.g. "Zu „Gig“ hinzugefügt". */
+    val message = MutableStateFlow<String?>(null)
+
+    /** First tap on "SONG ENTFERNEN" arms it, the second removes. */
+    val removeArmed = MutableStateFlow(false)
+
+    fun addToSet(setId: String) {
+        val song = currentSong() ?: return
+        SongbookRepository.addToSet(setId, song.id)
+        val name = SongbookRepository.library.value.set(setId)?.name ?: "Setlist"
+        message.value = "Zu „$name“ hinzugefügt"
+    }
+
+    fun createSetWithCurrent(name: String) {
+        val song = currentSong() ?: return
+        if (name.isBlank()) return
+        SongbookRepository.createSet(name, song.id)
+        message.value = "Neue Setlist „${name.trim()}“ angelegt"
+    }
+
+    /** Returns true when the song was removed and the screen should close. */
+    fun removeTapped(): Boolean {
+        if (!removeArmed.value) {
+            removeArmed.value = true
+            return false
+        }
+        val song = currentSong() ?: return false
+        player.value?.stop()
+        SongbookRepository.hideSong(song.id)
+        return true
+    }
+
     /** Songs the recording picker needs: the current song's id and title. */
     fun currentSong(): Song? = item()?.let { SongbookRepository.library.value.song(it.songId) }
 
@@ -289,6 +321,8 @@ class SongViewModel(
         playing.value = false
         player.value?.stop()
         audioName.value = null
+        message.value = null
+        removeArmed.value = false
         shift.value = null
         index.value = i
         loadShift()

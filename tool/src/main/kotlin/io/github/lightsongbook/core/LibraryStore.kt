@@ -15,6 +15,7 @@ class LibraryStore(filesDir: File) {
     private val backupFile = File(root, "backup.txt")
     private val extraDir = File(root, "extra")
     private val audioDir = File(root, "audio")
+    val userData = UserData(root)
 
     data class ImportSummary(
         val songs: Int,
@@ -30,22 +31,44 @@ class LibraryStore(filesDir: File) {
             }
     }
 
-    fun load(): Library {
-        val backup = if (backupFile.isFile) {
-            try {
-                Importer.parseBackupData(backupFile.readText())
-            } catch (e: ImportException) {
-                Library.EMPTY
-            }
-        } else {
+    private var cachedBackup: Pair<Long, Library>? = null
+
+    /** Parsed backup, cached until the file changes (editing setlists reloads often). */
+    private fun backupLibrary(): Library {
+        if (!backupFile.isFile) return Library.EMPTY
+        val stamp = backupFile.lastModified() xor backupFile.length()
+        cachedBackup?.let { (s, lib) -> if (s == stamp) return lib }
+        val lib = try {
+            Importer.parseBackupData(backupFile.readText())
+        } catch (e: ImportException) {
             Library.EMPTY
         }
+        cachedBackup = stamp to lib
+        return lib
+    }
+
+    fun load(): Library {
+        val backup = backupLibrary()
         val extras = extraDir.listFiles()
             ?.filter { it.isFile }
             ?.sortedBy { it.name }
             ?.map { Importer.songFromChordPro(it.name, it.readText()) }
             .orEmpty()
-        return Library(backup.songs + extras, backup.sets)
+        val all = backup.songs + extras
+        val hidden = userData.loadHidden()
+        val visible = all.filter { it.id !in hidden }
+        val visibleIds = visible.mapTo(HashSet()) { it.id }
+        val backupSets = backup.sets.map { set -> set.copy(entries = set.entries.filter { it.songId in visibleIds }) }
+        val ownSets = userData.loadSets().map { u ->
+            SetList(
+                id = u.id,
+                name = u.name,
+                date = u.date,
+                entries = u.songIds.filter { it in visibleIds }.map { SetEntry(it, 0, 0) },
+                editable = true,
+            )
+        }
+        return Library(visible, ownSets + backupSets, all.filter { it.id in hidden })
     }
 
     /** Parses first and only writes when parsing succeeded, so a bad file never wipes the library. */
@@ -56,6 +79,7 @@ class LibraryStore(filesDir: File) {
                 root.mkdirs()
                 val tmp = File(root, "backup.tmp")
                 tmp.writeText(payload.dataFileText)
+                cachedBackup = null
                 if (!tmp.renameTo(backupFile)) {
                     backupFile.delete()
                     tmp.renameTo(backupFile)

@@ -75,6 +75,8 @@ class SongScreen(
         val audioName by viewModel.audioName.collectAsState()
         val audioSpeed by viewModel.audioSpeed.collectAsState()
         val hasAudioFiles by viewModel.hasAudioFiles.collectAsState()
+        val message by viewModel.message.collectAsState()
+        val removeArmed by viewModel.removeArmed.collectAsState()
         val current = ui
 
         ToolScaffold(
@@ -147,10 +149,48 @@ class SongScreen(
                             .padding(vertical = 1.5f.gridUnitsAsDp()),
                     )
                 }
+                FooterLink(message ?: "ZU SETLIST HINZUFÜGEN", lighten = message != null) { openSetPicker() }
+                FooterLink(if (removeArmed) "NOCHMAL TIPPEN ZUM ENTFERNEN" else "SONG ENTFERNEN", lighten = !removeArmed) {
+                    if (viewModel.removeTapped()) goBack()
+                }
+
                 // room to scroll the last lines up to eye level
                 Spacer(modifier = Modifier.height(6f.gridUnitsAsDp()))
             }
         }
+    }
+
+    @Composable
+    private fun FooterLink(text: String, lighten: Boolean, onClick: () -> Unit) {
+        LightText(
+            text = text,
+            variant = LightTextVariant.Detail,
+            lighten = lighten,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .fillMaxWidth()
+                .lightClickable(onClick = onClick)
+                .padding(vertical = 0.75f.gridUnitsAsDp()),
+        )
+    }
+
+    private fun openSetPicker() {
+        navigateTo(
+            screenFactory = { SetPickerScreen(it) },
+            resultCallback = { setId ->
+                if (setId.isEmpty()) {
+                    navigateTo(
+                        screenFactory = {
+                            TextEditorScreen(it, "", title = "Neue Setlist", submitLabel = "ANLEGEN", isSearch = false)
+                        },
+                        resultCallback = { name -> viewModel.createSetWithCurrent(name) },
+                    )
+                } else {
+                    viewModel.addToSet(setId)
+                }
+            },
+        )
     }
 
     private fun openAudioPicker(title: String, current: String?) {
