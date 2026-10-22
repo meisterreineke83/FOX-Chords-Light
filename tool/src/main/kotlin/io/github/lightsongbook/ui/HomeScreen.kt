@@ -54,7 +54,7 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
         val colors by LightThemeController.colors.collectAsState()
         val isDark = colors == LightThemeColors.Dark
 
-        ToolScaffold(title = "Songbook", onBack = null) {
+        ToolScaffold(title = "Chords", onBack = null) {
             MenuItem("SONGS", value = library.songs.size.toString()) {
                 navigateTo(::SongListScreen)
             }

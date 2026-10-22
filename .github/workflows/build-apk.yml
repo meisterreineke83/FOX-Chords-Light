@@ -37,21 +37,21 @@ jobs:
       - name: APK bauen
         run: |
           ./gradlew :tool:assembleDebug -DlightSdk.toolOnly=true --stacktrace
-          cp tool/build/outputs/apk/debug/*.apk FOX-Songbook-Light.apk
+          cp tool/build/outputs/apk/debug/*.apk FOX-Chords-Light.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FOX-Songbook-Light-APK
-          path: FOX-Songbook-Light.apk
+          name: FOX-Chords-Light-APK
+          path: FOX-Chords-Light.apk
 
       - name: Als Release veröffentlichen
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.v.outputs.version }}
-          name: FOX Songbook Light ${{ steps.v.outputs.version }}
+          name: FOX Chords Light ${{ steps.v.outputs.version }}
           prerelease: false
           make_latest: true
-          files: FOX-Songbook-Light.apk
+          files: FOX-Chords-Light.apk
           body: |
             Automatisch gebaut aus ${{ github.sha }}.
             Installation: siehe README → „Aufs Light Phone bringen“.
