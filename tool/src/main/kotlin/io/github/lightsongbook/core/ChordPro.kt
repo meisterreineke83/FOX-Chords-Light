@@ -28,8 +28,9 @@ sealed class SongLine {
  */
 object ChordPro {
 
-    private val DIRECTIVE = Regex("""^\{\s*([A-Za-z_]+)\s*(?::\s*(.*?))?\s*}\s*$""")
-    private val CHORD_IN_LINE = Regex("""\[([^\]\n]*)]""")
+    // Android (ICU) needs "{", "}", "[" and "]" escaped even where plain Java accepts them.
+    private val DIRECTIVE = Regex("""^\{\s*([A-Za-z_]+)\s*(?::\s*(.*?))?\s*\}\s*$""")
+    private val CHORD_IN_LINE = Regex("""\[([^\]\n]*)\]""")
     private val SECTION_WORDS = Regex(
         """^(intro|outro|verse|vers|strophe|chorus|refrain|pre-?chorus|bridge|interlude|instrumental|solo|tag|ending|coda|zwischenspiel|ref\.?)(\s*\d+)?\s*:?\s*(\(.*\))?\s*$""",
         RegexOption.IGNORE_CASE,
