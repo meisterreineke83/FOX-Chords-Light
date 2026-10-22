@@ -58,8 +58,8 @@ class Prefs(private val store: DataStore<Preferences>) {
     companion object {
         const val MAX_FONT_STEP = 5
         const val DEFAULT_FONT_STEP = 2
-        const val MAX_SCROLL_SPEED = 9
-        const val DEFAULT_SCROLL_SPEED = 4
+        const val MAX_SCROLL_SPEED = 15
+        const val DEFAULT_SCROLL_SPEED = 6
 
         private val FONT_STEP = intPreferencesKey("fontStep")
         private val SCROLL_SPEED = intPreferencesKey("scrollSpeed")

@@ -46,8 +46,8 @@ import kotlinx.coroutines.isActive
 /** Lyric font sizes for the A−/A+ buttons, in sp. */
 private val FONT_SIZES = listOf(13f, 15f, 17f, 20f, 23f, 27f)
 
-/** Auto-scroll speeds (levels 1–9), in dp per second. */
-private val SCROLL_SPEEDS_DP = listOf(5f, 7f, 9f, 12f, 16f, 21f, 28f, 37f, 50f)
+/** Auto-scroll speeds (levels 1–15), in dp per second. */
+private val SCROLL_SPEEDS_DP = listOf(3f, 4f, 5f, 6f, 8f, 10f, 12f, 15f, 18f, 22f, 27f, 33f, 40f, 50f, 62f)
 
 class SongScreen(
     sealedActivity: SealedLightActivity,
@@ -125,16 +125,14 @@ class SongScreen(
     }
 
     private fun bottomBarItems(ui: SongViewModel.Ui, playing: Boolean): List<LightBottomBarItem?> {
-        val slower = LightBarButton.LightIcon(icon = LightIcons.REWIND, onClick = { viewModel.changeSpeed(-1) })
         val play = LightBarButton.LightIcon(
             icon = if (playing) LightIcons.PAUSE else LightIcons.PLAY,
             onClick = { viewModel.togglePlaying() },
         )
-        val faster = LightBarButton.LightIcon(icon = LightIcons.FAST_FORWARD, onClick = { viewModel.changeSpeed(1) })
-        if (!ui.isList) return listOf(slower, play, faster)
+        if (!ui.isList) return listOf(play)
         val prev = if (ui.hasPrev) LightBarButton.LightIcon(icon = LightIcons.UP, onClick = { viewModel.previous() }) else null
         val next = if (ui.hasNext) LightBarButton.LightIcon(icon = LightIcons.DOWN, onClick = { viewModel.next() }) else null
-        return listOf(prev, slower, play, faster, next)
+        return listOf(prev, play, next)
     }
 
     @Composable
@@ -158,17 +156,28 @@ class SongScreen(
             ControlText("A−") { viewModel.changeFont(-1) }
             ControlText("A+") { viewModel.changeFont(1) }
         }
-        val line = listOf(info, if (playing) "Scroll $speed" else "")
-            .filter { it.isNotEmpty() }
-            .joinToString(" · ")
-        if (line.isNotEmpty()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 1f.gridUnitsAsDp(), end = 0.5f.gridUnitsAsDp(), bottom = 0.25f.gridUnitsAsDp()),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             LightText(
-                text = line,
+                text = info,
                 variant = LightTextVariant.Detail,
                 lighten = true,
                 maxLines = 1,
-                modifier = Modifier.padding(start = 1f.gridUnitsAsDp(), bottom = 0.5f.gridUnitsAsDp()),
+                modifier = Modifier.weight(1f),
             )
+            ControlText("−") { viewModel.changeSpeed(-1) }
+            LightText(
+                text = if (playing) "▶ $speed" else "SCROLL $speed",
+                variant = LightTextVariant.Detail,
+                modifier = Modifier
+                    .lightClickable { viewModel.togglePlaying() }
+                    .padding(vertical = 0.5f.gridUnitsAsDp()),
+            )
+            ControlText("+") { viewModel.changeSpeed(1) }
         }
     }
 

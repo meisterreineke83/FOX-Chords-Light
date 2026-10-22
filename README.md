@@ -14,7 +14,8 @@ Deine Songs aus Songbook Pro auf dem Light Phone III – Akkorde, Texte und Setl
 - **Transponieren:** `−` / `+` neben der Tonart, Tippen auf die Tonart setzt zurück. Die Wahl bleibt
   pro Song gespeichert. Capo wird berücksichtigt („Capo 2 (A)“ = Griffe in A). Deutsche Schreibweise
   mit H wird erkannt und beibehalten.
-- **Schriftgröße** mit `A−` / `A+`, **Auto-Scroll** mit ▶ (◀◀ / ▶▶ langsamer/schneller).
+- **Schriftgröße** mit `A−` / `A+`. **Auto-Scroll** mit ▶ unten oder Tippen auf „SCROLL“; das Tempo
+  (Stufe 1–15) stellst du mit `−` / `+` daneben ein, es bleibt gespeichert.
 - Hell/Dunkel umschaltbar.
 
 ## Was aus dem Backup übernommen wird
