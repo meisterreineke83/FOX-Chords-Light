@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SimpleLightScreen
 import io.github.lightsongbook.core.ChordPro
+import io.github.lightsongbook.core.CrashLog
 import io.github.lightsongbook.core.Library
 import io.github.lightsongbook.core.SetList
 import io.github.lightsongbook.core.Song
@@ -57,6 +58,8 @@ class SongViewModel(
         val hasNext: Boolean,
         val nextTitle: String?,
         val isList: Boolean,
+        /** set if the song could not be prepared; shown instead of the song */
+        val error: String? = null,
     )
 
     private val index = MutableStateFlow(request.startIndex)
@@ -92,6 +95,24 @@ class SongViewModel(
     private fun build(library: Library, i: Int, total: Int?): Ui? {
         val item = item(i) ?: return null
         val song = library.song(item.songId) ?: return null
+        return try {
+            buildUi(library, i, total, item, song)
+        } catch (e: Exception) {
+            Ui(
+                song = song,
+                blocks = emptyList(),
+                keyLabel = "",
+                info = "",
+                hasPrev = i > 0,
+                hasNext = i < request.items.size - 1,
+                nextTitle = null,
+                isList = request.items.size > 1,
+                error = CrashLog.describe(e),
+            )
+        }
+    }
+
+    private fun buildUi(library: Library, i: Int, total: Int?, item: SongRequest.Item, song: Song): Ui {
         val base = baseShift(song, item)
         val shiftTotal = total ?: base
         val capo = capoFor(song, item)

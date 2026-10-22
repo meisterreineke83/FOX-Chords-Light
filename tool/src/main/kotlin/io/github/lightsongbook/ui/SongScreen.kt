@@ -95,7 +95,12 @@ class SongScreen(
                     .padding(start = 1f.gridUnitsAsDp()),
                 scrollState = scrollState,
             ) {
-                SongBody(current.blocks, fontStep)
+                if (current.error != null) {
+                    LightText(text = "Dieser Song konnte nicht angezeigt werden:", variant = LightTextVariant.Paragraph)
+                    Text(text = current.error, style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = LightThemeTokens.colors.content))
+                } else {
+                    SongBody(current.blocks, fontStep)
+                }
 
                 if (current.song.notes.isNotBlank()) {
                     Spacer(modifier = Modifier.height(1f.gridUnitsAsDp()))

@@ -12,6 +12,7 @@ import com.thelightphone.sdk.LightViewModel
 import com.thelightphone.sdk.SealedLightActivity
 import com.thelightphone.sdk.ui.LightThemeColors
 import com.thelightphone.sdk.ui.LightThemeController
+import io.github.lightsongbook.core.CrashLog
 import io.github.lightsongbook.core.SongbookRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,11 +27,20 @@ class HomeViewModel(
     val library = SongbookRepository.library
     val loaded = SongbookRepository.loaded
 
+    val lastCrash = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+
     init {
+        CrashLog.install(filesDir)
         viewModelScope.launch(Dispatchers.IO) {
+            lastCrash.value = CrashLog.read()
             prefs.applyTheme()
             SongbookRepository.ensureLoaded(filesDir)
         }
+    }
+
+    fun clearCrash() {
+        CrashLog.clear()
+        lastCrash.value = null
     }
 
     fun toggleTheme() {
@@ -53,6 +63,7 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
         val loaded by viewModel.loaded.collectAsState()
         val colors by LightThemeController.colors.collectAsState()
         val isDark = colors == LightThemeColors.Dark
+        val lastCrash by viewModel.lastCrash.collectAsState()
 
         ToolScaffold(title = "Chords", onBack = null) {
             MenuItem("SONGS", value = library.songs.size.toString()) {
@@ -66,6 +77,11 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
             }
             MenuItem("ANZEIGE", value = if (isDark) "DUNKEL" else "HELL") {
                 viewModel.toggleTheme()
+            }
+            lastCrash?.let { report ->
+                MenuItem("LETZTER FEHLER") {
+                    navigateTo({ CrashScreen(it, report) }) { viewModel.clearCrash() }
+                }
             }
             if (loaded && library.songs.isEmpty()) {
                 HintText(
