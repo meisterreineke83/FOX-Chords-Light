@@ -267,3 +267,36 @@ class AudioBadgeTest {
         assertEquals(emptySet<String>(), Audio.songsWithAudio(songs, emptyList(), emptyMap()))
     }
 }
+
+class TunerTest {
+    private fun sine(freq: Double, rate: Int = 48_000, n: Int = 4096, harmonics: Boolean = true) =
+        ShortArray(n) { i ->
+            val t = i.toDouble() / rate
+            var v = kotlin.math.sin(2 * Math.PI * freq * t)
+            if (harmonics) v += 0.5 * kotlin.math.sin(4 * Math.PI * freq * t) + 0.25 * kotlin.math.sin(6 * Math.PI * freq * t)
+            (v * 8000).toInt().toShort()
+        }
+
+    @Test
+    fun detectsGuitarStrings() {
+        for ((freq, name) in listOf(82.41 to "E", 110.0 to "A", 146.83 to "D", 196.0 to "G", 246.94 to "B", 329.63 to "E")) {
+            val f = Tuner.detect(sine(freq), sampleRate = 48_000)
+            assertTrue(f != null, "no pitch for $freq")
+            val r = Tuner.reading(f!!)
+            assertEquals(name, r.note, "note for $freq")
+            assertTrue(kotlin.math.abs(r.cents) <= 3, "cents ${r.cents} for $freq")
+        }
+    }
+
+    @Test
+    fun namesNotesAndCents() {
+        val a = Tuner.reading(440f)
+        assertEquals("A", a.note); assertEquals(4, a.octave); assertEquals(0, a.cents)
+        assertEquals(-10, Tuner.reading(440f * Math.pow(2.0, -10.0 / 1200).toFloat()).cents)
+    }
+
+    @Test
+    fun ignoresSilence() {
+        assertNull(Tuner.detect(ShortArray(4096), sampleRate = 48_000))
+    }
+}

@@ -26,6 +26,12 @@ Deine Songs aus Songbook Pro auf dem Light Phone III – Akkorde, Texte und Setl
   `−` / `+` ändert das Tempo von 50 % bis 125 % ohne die Tonhöhe zu verändern. ▶ unten startet
   Aufnahme und Auto-Scroll zusammen. Songs mit Aufnahme tragen in den Listen ein kleines ♪ im Kreis.
   Unter „AUFNAHMEN“ im Hauptmenü lassen sich Dateien löschen.
+- **Scrollen passend zur Aufnahme:** Läuft beim Auto-Scroll die MP3 mit (▶ unten startet beides), passt
+  sich das Tempo automatisch an, sodass der Text zusammen mit dem Lied endet („▶ MIT MP3“). Auch das
+  Tempo der Aufnahme (50–125 %) wird berücksichtigt.
+- **Display bleibt an,** solange Auto-Scroll oder die Aufnahme läuft, und beim Stimmgerät.
+- **Stimmgerät:** im Hauptmenü. Zeigt Ton, Oktave, Frequenz und die Abweichung in Cent (Kammerton
+  A = 440 Hz). Das Mikrofon hört nur zu, solange die Seite offen ist; aufgenommen wird nichts.
 - Hell/Dunkel umschaltbar.
 
 ## Was aus dem Backup übernommen wird
@@ -47,6 +53,7 @@ abgeleitet. Ändert Songbook Pro es, muss der Import angepasst werden.
 | Was | Wohin | Wozu |
 |---|---|---|
 | Backup / ChordPro-Dateien / Aufnahmen | nur vom iPad direkt ins lokale WLAN zum Telefon | Import |
+| Mikrofon | bleibt auf dem Telefon, wird nicht gespeichert | Stimmgerät |
 
 - Das Tool baut **keine** Verbindung ins Internet auf. Die Berechtigung `INTERNET` braucht Android,
   damit das Telefon im WLAN eine Upload-Seite anbieten kann.

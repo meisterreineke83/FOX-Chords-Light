@@ -81,6 +81,9 @@ class HomeScreen(sealedActivity: SealedLightActivity) :
                     navigateTo(::HiddenSongsScreen)
                 }
             }
+            MenuItem("STIMMGERÄT") {
+                navigateTo(::TunerScreen)
+            }
             MenuItem("IMPORT") {
                 navigateTo(::ImportScreen)
             }

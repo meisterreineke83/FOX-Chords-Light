@@ -15,6 +15,9 @@ import io.github.lightsongbook.core.SongRendering
 import io.github.lightsongbook.core.SongbookRepository
 import io.github.lightsongbook.core.Transposition
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -79,6 +82,12 @@ class SongViewModel(
 
     /** File name of the current song's recording, or null. */
     val audioName = MutableStateFlow<String?>(null)
+
+    /** True while the recording is actually playing. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val audioPlaying: StateFlow<Boolean> = player
+        .flatMapLatest { it?.isPlaying ?: flowOf(false) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** Playback speed of the recording (pitch stays the same). */
     val audioSpeed = MutableStateFlow(1.0f)

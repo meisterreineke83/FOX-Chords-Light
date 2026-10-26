@@ -20,9 +20,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -74,6 +76,7 @@ class SongScreen(
         val player by viewModel.player.collectAsState()
         val audioName by viewModel.audioName.collectAsState()
         val audioSpeed by viewModel.audioSpeed.collectAsState()
+        val audioPlaying by viewModel.audioPlaying.collectAsState()
         val hasAudioFiles by viewModel.hasAudioFiles.collectAsState()
         val message by viewModel.message.collectAsState()
         val removeArmed by viewModel.removeArmed.collectAsState()
@@ -90,11 +93,13 @@ class SongScreen(
                 return@ToolScaffold
             }
 
+            val synced = playing && audioPlaying && audioName != null
             ControlsRow(
                 keyLabel = current.keyLabel,
                 info = current.info,
                 playing = playing,
                 speed = speed,
+                synced = synced,
             )
 
             val activePlayer = player
@@ -103,12 +108,13 @@ class SongScreen(
             }
 
             val scrollState = remember(current.song.id) { ScrollState(0) }
-            AutoScroll(scrollState, playing, speed, current.song.id)
+            AutoScroll(scrollState, playing, speed, current.song.id, if (audioName != null) player else null, audioSpeed)
 
             LightScrollView(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .then(if (playing || audioPlaying) Modifier.keepScreenOn() else Modifier)
                     .padding(start = 1f.gridUnitsAsDp()),
                 scrollState = scrollState,
             ) {
@@ -243,7 +249,7 @@ class SongScreen(
     }
 
     @Composable
-    private fun ControlsRow(keyLabel: String, info: String, playing: Boolean, speed: Int) {
+    private fun ControlsRow(keyLabel: String, info: String, playing: Boolean, speed: Int, synced: Boolean) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -278,7 +284,11 @@ class SongScreen(
             )
             ControlText("−") { viewModel.changeSpeed(-1) }
             LightText(
-                text = if (playing) "▶ $speed" else "SCROLL $speed",
+                text = when {
+                    synced -> "▶ MIT MP3"
+                    playing -> "▶ $speed"
+                    else -> "SCROLL $speed"
+                },
                 variant = LightTextVariant.Detail,
                 modifier = Modifier
                     .lightClickable { viewModel.toggleScrolling() }
@@ -299,22 +309,44 @@ class SongScreen(
         )
     }
 
+    /**
+     * Scrolls while [playing]. If the song's recording is playing, the speed is chosen so the
+     * text reaches its end together with the recording (recomputed every frame, so manual
+     * scrolling and tempo changes are absorbed); otherwise the manual speed level is used.
+     */
     @Composable
-    private fun AutoScroll(state: ScrollState, playing: Boolean, speed: Int, songId: String) {
+    private fun AutoScroll(
+        state: ScrollState,
+        playing: Boolean,
+        speed: Int,
+        songId: String,
+        player: LightAudioPlayer?,
+        audioSpeed: Float,
+    ) {
         val density = LocalDensity.current
-        LaunchedEffect(playing, speed, songId) {
+        val currentAudioSpeed by rememberUpdatedState(audioSpeed)
+        LaunchedEffect(playing, speed, songId, player) {
             if (!playing) return@LaunchedEffect
-            val pxPerSecond = with(density) { SCROLL_SPEEDS_DP[(speed - 1).coerceIn(0, SCROLL_SPEEDS_DP.lastIndex)].dp.toPx() }
+            val manualPxPerSecond = with(density) { SCROLL_SPEEDS_DP[(speed - 1).coerceIn(0, SCROLL_SPEEDS_DP.lastIndex)].dp.toPx() }
             var last = withFrameNanos { it }
             while (isActive) {
                 val now = withFrameNanos { it }
                 val seconds = (now - last) / 1_000_000_000f
                 last = now
-                if (state.maxValue > 0 && state.value >= state.maxValue) {
+                val duration = player?.durationMs?.value ?: 0L
+                val synced = player != null && player.isPlaying.value && duration > 0
+                if (!synced && state.maxValue > 0 && state.value >= state.maxValue) {
                     viewModel.stopPlaying()
                     break
                 }
-                state.scrollBy(pxPerSecond * seconds)
+                val pxPerSecond = if (synced) {
+                    val remainingSeconds = (duration - player!!.positionMs.value) / 1000f / currentAudioSpeed.coerceAtLeast(0.1f)
+                    val remainingPx = (state.maxValue - state.value).toFloat()
+                    if (remainingSeconds > 1f) remainingPx / remainingSeconds else 0f
+                } else {
+                    manualPxPerSecond
+                }
+                if (pxPerSecond > 0f) state.scrollBy(pxPerSecond * seconds)
             }
         }
     }

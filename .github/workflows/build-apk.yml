@@ -32,12 +32,22 @@ jobs:
       - name: Tests
         run: |
           chmod +x gradlew
-          ./gradlew :tool:testDebugUnitTest -DlightSdk.toolOnly=true --stacktrace
+          set -o pipefail
+          ./gradlew :tool:testDebugUnitTest -DlightSdk.toolOnly=true --stacktrace 2>&1 | tee build.log
 
       - name: APK bauen
         run: |
-          ./gradlew :tool:assembleDebug -DlightSdk.toolOnly=true --stacktrace
+          set -o pipefail
+          ./gradlew :tool:assembleDebug -DlightSdk.toolOnly=true --stacktrace 2>&1 | tee -a build.log
           cp tool/build/outputs/apk/debug/*.apk FOX-Chords-Light.apk
+
+      # Kompilier- und Testfehler als Hinweise ausgeben (ohne Anmeldung über die API lesbar)
+      - name: Fehler melden
+        if: failure()
+        run: |
+          grep -E "^e: |FAILED|Exception|error:|Light SDK:|violation" build.log | head -40 | while IFS= read -r line; do
+            echo "::error::${line}"
+          done
 
       - uses: actions/upload-artifact@v4
         with:

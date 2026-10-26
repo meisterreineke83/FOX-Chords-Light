@@ -1,10 +1,10 @@
 [tool]
 id = "io.github.lightsongbook"
 label = "Chords"
-versionCode = 7
-versionName = "0.3.1"
-# INTERNET braucht nur der WLAN-Import: das iPad lädt das Backup direkt aufs Telefon.
-permissions = ["android.permission.INTERNET"]
+versionCode = 8
+versionName = "0.4.0"
+# INTERNET braucht nur der WLAN-Import (das iPad lädt Dateien direkt aufs Telefon), RECORD_AUDIO das Stimmgerät.
+permissions = ["android.permission.INTERNET", "android.permission.RECORD_AUDIO"]
 capabilities = []
 # for the LightOS emulator, use the line below and build with -DlightSdk.allowAltServerPackage=true
 # serverPackage = "com.thelightphone.sdk.emulator"
