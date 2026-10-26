@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewModelScope
 import com.thelightphone.sdk.LightScreen
@@ -54,6 +55,7 @@ class SongListScreen(sealedActivity: SealedLightActivity) :
     override fun Content() {
         val results by viewModel.results.collectAsState()
         val query by viewModel.query.collectAsState()
+        val withAudio by remember { songsWithAudio(Prefs(lightContext.dataStore)) }.collectAsState(emptySet())
 
         ToolScaffold(
             title = "Songs",
@@ -90,6 +92,7 @@ class SongListScreen(sealedActivity: SealedLightActivity) :
                         TwoLineRow(
                             title = song.title,
                             detail = song.artist,
+                            hasAudio = song.id in withAudio,
                             onClick = {
                                 val ids = results.map { it.id }
                                 val request = SongRequest.fromList(ids, ids.indexOf(song.id))

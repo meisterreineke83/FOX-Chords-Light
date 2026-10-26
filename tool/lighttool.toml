@@ -1,8 +1,8 @@
 [tool]
 id = "io.github.lightsongbook"
 label = "Chords"
-versionCode = 6
-versionName = "0.3.0"
+versionCode = 7
+versionName = "0.3.1"
 # INTERNET braucht nur der WLAN-Import: das iPad lädt das Backup direkt aufs Telefon.
 permissions = ["android.permission.INTERNET"]
 capabilities = []

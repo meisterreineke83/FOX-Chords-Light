@@ -24,7 +24,8 @@ Deine Songs aus Songbook Pro auf dem Light Phone III – Akkorde, Texte und Setl
   Datei wie der Song (`Africa.mp3`, `Toto - Africa.mp3`), wird sie automatisch zugeordnet; sonst unter
   dem Song „AUFNAHME ZUORDNEN“. Im Song: `AUDIO` spielt/pausiert, `‹10` springt 10 Sekunden zurück,
   `−` / `+` ändert das Tempo von 50 % bis 125 % ohne die Tonhöhe zu verändern. ▶ unten startet
-  Aufnahme und Auto-Scroll zusammen. Unter „AUFNAHMEN“ im Hauptmenü lassen sich Dateien löschen.
+  Aufnahme und Auto-Scroll zusammen. Songs mit Aufnahme tragen in den Listen ein kleines ♪ im Kreis.
+  Unter „AUFNAHMEN“ im Hauptmenü lassen sich Dateien löschen.
 - Hell/Dunkel umschaltbar.
 
 ## Was aus dem Backup übernommen wird

@@ -32,6 +32,22 @@ object Audio {
             ?.first
     }
 
+    /**
+     * Ids of the songs that have a recording: a file chosen by hand (in [assignments],
+     * song id to file name, "" meaning "none") or else one found by [match].
+     */
+    fun songsWithAudio(songs: List<Song>, fileNames: List<String>, assignments: Map<String, String>): Set<String> {
+        if (fileNames.isEmpty()) return emptySet()
+        val existing = fileNames.toSet()
+        return songs.filter { song ->
+            when (val chosen = assignments[song.id]) {
+                null -> match(song, fileNames) != null
+                "" -> false
+                else -> chosen in existing
+            }
+        }.mapTo(HashSet()) { it.id }
+    }
+
     /** "3:07" */
     fun formatTime(ms: Long): String {
         val total = (ms / 1000).coerceAtLeast(0)

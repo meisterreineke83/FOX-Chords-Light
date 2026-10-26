@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -124,6 +125,7 @@ class SetDetailScreen(
         val library by viewModel.library.collectAsState()
         val editing by viewModel.editing.collectAsState()
         val armed by viewModel.armedDelete.collectAsState()
+        val withAudio by remember { songsWithAudio(Prefs(lightContext.dataStore)) }.collectAsState(emptySet())
         val set = library.set(setId)
 
         if (set == null) {
@@ -207,6 +209,7 @@ class SetDetailScreen(
                             leading = "${index + 1}",
                             title = title,
                             detail = song?.artist,
+                            hasAudio = entry.songId in withAudio,
                             onClick = { navigateTo({ SongScreen(it, SongRequest.fromSet(set, index)) }) },
                         )
                     }
@@ -295,6 +298,7 @@ class SongPickerScreen(sealedActivity: SealedLightActivity) :
     override fun Content() {
         val results by viewModel.results.collectAsState()
         val query by viewModel.query.collectAsState()
+        val withAudio by remember { songsWithAudio(Prefs(lightContext.dataStore)) }.collectAsState(emptySet())
 
         ToolScaffold(
             title = "Song hinzufügen",
@@ -325,7 +329,12 @@ class SongPickerScreen(sealedActivity: SealedLightActivity) :
                 uniformItemHeightGridUnits = LIST_ROW_UNITS,
             ) {
                 items(results, key = { it.id }) { song ->
-                    TwoLineRow(title = song.title, detail = song.artist, onClick = { goBack(song.id) })
+                    TwoLineRow(
+                        title = song.title,
+                        detail = song.artist,
+                        hasAudio = song.id in withAudio,
+                        onClick = { goBack(song.id) },
+                    )
                 }
             }
         }

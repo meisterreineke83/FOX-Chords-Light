@@ -1,6 +1,20 @@
 package io.github.lightsongbook.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import io.github.lightsongbook.core.Audio
+import io.github.lightsongbook.core.SongbookRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import com.thelightphone.sdk.ui.lightClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -88,6 +102,7 @@ fun TwoLineRow(
     detail: String?,
     onClick: () -> Unit,
     leading: String? = null,
+    hasAudio: Boolean = false,
 ) {
     Row(
         modifier = Modifier
@@ -105,7 +120,10 @@ fun TwoLineRow(
                 modifier = Modifier.width(2.5f.gridUnitsAsDp()),
             )
         }
-        Column(verticalArrangement = Arrangement.Center) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+        ) {
             LightText(
                 text = title,
                 variant = LightTextVariant.Copy,
@@ -122,8 +140,30 @@ fun TwoLineRow(
                 )
             }
         }
+        if (hasAudio) AudioBadge()
     }
 }
+
+/** Small ♪ in a circle: this song has a practice recording. */
+@Composable
+fun AudioBadge() {
+    val color = LightThemeTokens.colors.content
+    Box(
+        modifier = Modifier
+            .padding(start = 0.5f.gridUnitsAsDp())
+            .size(1.4f.gridUnitsAsDp())
+            .border(width = 1.dp, color = color, shape = CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = "♪", style = TextStyle(color = color, fontSize = 11.sp, lineHeight = 11.sp))
+    }
+}
+
+/** Ids of all songs with a recording, kept up to date. */
+fun songsWithAudio(prefs: Prefs): Flow<Set<String>> =
+    combine(SongbookRepository.library, SongbookRepository.audioFiles, prefs.audioAssignments) { library, files, assigned ->
+        Audio.songsWithAudio(library.songs, files, assigned)
+    }.flowOn(Dispatchers.Default)
 
 /** Upper-case menu entry like in LightOS, with an optional value on the right. */
 @Composable

@@ -59,6 +59,13 @@ class Prefs(private val store: DataStore<Preferences>) {
     suspend fun audioAssignment(songId: String): String? =
         store.data.first()[stringPreferencesKey("audio:$songId")]
 
+    /** All recordings chosen by hand, song id to file name ("" = none). */
+    val audioAssignments: Flow<Map<String, String>> = store.data.map { prefs ->
+        prefs.asMap().entries
+            .filter { it.key.name.startsWith("audio:") }
+            .associate { it.key.name.removePrefix("audio:") to it.value.toString() }
+    }
+
     suspend fun setAudioAssignment(songId: String, fileName: String?) {
         val key = stringPreferencesKey("audio:$songId")
         store.edit { if (fileName == null) it.remove(key) else it[key] = fileName }

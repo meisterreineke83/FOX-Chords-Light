@@ -252,3 +252,18 @@ class UserDataTest {
         assertEquals(listOf("cho:zwei.cho"), set.entries.map { it.songId })
     }
 }
+
+class AudioBadgeTest {
+    @Test
+    fun findsSongsWithRecordings() {
+        val songs = listOf(
+            Song("1", "Africa", "", 0, 0, 0, ""),
+            Song("2", "Hello", "", 0, 0, 0, ""),
+            Song("3", "Yesterday", "", 0, 0, 0, ""),
+        )
+        val files = listOf("Africa.mp3", "take1.mp3")
+        assertEquals(setOf("1", "3"), Audio.songsWithAudio(songs, files, mapOf("3" to "take1.mp3")))
+        assertEquals(emptySet<String>(), Audio.songsWithAudio(songs, files, mapOf("1" to "")))
+        assertEquals(emptySet<String>(), Audio.songsWithAudio(songs, emptyList(), emptyMap()))
+    }
+}
