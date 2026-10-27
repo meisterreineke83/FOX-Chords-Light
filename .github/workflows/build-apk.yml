@@ -54,6 +54,11 @@ jobs:
           name: FOX-Chords-Light-APK
           path: FOX-Chords-Light.apk
 
+      - name: Release-Text zusammenstellen
+        run: |
+          cp docs/release-text.md release-body.md
+          printf '\n---\nAutomatisch gebaut aus %s.\n' "${{ github.sha }}" >> release-body.md
+
       - name: Als Release veröffentlichen
         uses: softprops/action-gh-release@v2
         with:
@@ -62,6 +67,4 @@ jobs:
           prerelease: false
           make_latest: true
           files: FOX-Chords-Light.apk
-          body: |
-            Automatisch gebaut aus ${{ github.sha }}.
-            Installation: siehe README → „Aufs Light Phone bringen“.
+          body_path: release-body.md

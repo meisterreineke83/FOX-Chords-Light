@@ -1,8 +1,8 @@
 [tool]
 id = "io.github.lightsongbook"
 label = "Chords"
-versionCode = 8
-versionName = "0.4.0"
+versionCode = 9
+versionName = "0.4.1"
 # INTERNET braucht nur der WLAN-Import (das iPad lädt Dateien direkt aufs Telefon), RECORD_AUDIO das Stimmgerät.
 permissions = ["android.permission.INTERNET", "android.permission.RECORD_AUDIO"]
 capabilities = []
