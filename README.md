@@ -1,3 +1,5 @@
+<img src="docs/icon.png" width="120" alt="FOX-Chords-Symbol" align="right">
+
 # FOX Chords Light
 Deine Songbook-Pro-Songs auf dem Light Phone III – Akkorde, Texte, Setlists und Übe-Aufnahmen, offline.
 
