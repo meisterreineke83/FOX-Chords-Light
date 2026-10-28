@@ -1,6 +1,13 @@
 # FOX Chords Light
 Deine Songbook-Pro-Songs auf dem Light Phone III – Akkorde, Texte, Setlists und Übe-Aufnahmen, offline.
 
+<p>
+  <img src="docs/screenshots/1-start.png" width="200" alt="Startseite">
+  <img src="docs/screenshots/2-songs.png" width="200" alt="Songliste">
+  <img src="docs/screenshots/3-song.png" width="200" alt="Song mit Akkorden">
+  <img src="docs/screenshots/4-stimmgeraet.png" width="200" alt="Stimmgerät">
+</p>
+
 Ich wollte meine Akkorde und Liedtexte aus Songbook Pro (iPad) auch auf dem Light Phone dabeihaben – also habe ich mit Claude ein eigenes Tool dafür gebaut. Es liest das Backup von Songbook Pro direkt ein und läuft komplett offline: kein Konto, keine Cloud, kein Tracking.
 
 ## Funktionen

@@ -3,6 +3,10 @@ name: APK bauen
 on:
   push:
     branches: [main]
+    # Texte und Bilder brauchen keine neue APK
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
