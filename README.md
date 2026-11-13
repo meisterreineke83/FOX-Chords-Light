@@ -141,7 +141,7 @@ Der Code liegt in [`tool/src/main/kotlin/io/github/lightsongbook`](tool/src/main
 
 `core/` kommt ohne Android aus; die Tests dazu liegen in `tool/src/test`.
 
-Der Rest des Repos ist die [Light SDK](https://github.com/lightphone/light-sdk) (Stand Oktober 2026),
+Der Rest des Repos ist die [Light SDK](https://github.com/lightphone/light-sdk) (Version 0.2.7),
 deren ursprüngliche README in `README.light-sdk.md` liegt.
 
 ## Für die offizielle Tool-Bibliothek
