@@ -42,8 +42,9 @@ jobs:
       - name: APK bauen
         run: |
           set -o pipefail
-          ./gradlew :tool:assembleDebug -DlightSdk.toolOnly=true --stacktrace 2>&1 | tee -a build.log
-          cp tool/build/outputs/apk/debug/*.apk FOX-Chords-Light.apk
+          # wie Lights Build-Server: verkleinerte Release-Version, nur für den Prozessor des Light Phones
+          ./gradlew :tool:assembleRelease -DlightSdk.toolOnly=true -DlightSdk.abiFilters=arm64-v8a --stacktrace 2>&1 | tee -a build.log
+          cp tool/build/outputs/apk/release/*.apk FOX-Chords-Light.apk
 
       # Kompilier- und Testfehler als Hinweise ausgeben (ohne Anmeldung über die API lesbar)
       - name: Fehler melden
